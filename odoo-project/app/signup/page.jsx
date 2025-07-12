@@ -14,8 +14,6 @@ export default function SignupPage() {
     confirmPassword: "",
     name: "",
     skills: "",
-    bio: "",
-    experience: "",
   })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
@@ -39,35 +37,23 @@ export default function SignupPage() {
   const validateForm = () => {
     const newErrors = {}
 
-    if (!formData.name) {
-      newErrors.name = "Name is required"
-    }
-
+    if (!formData.name) newErrors.name = "Name is required"
     if (!formData.email) {
       newErrors.email = "Email is required"
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid"
     }
-
     if (!formData.password) {
       newErrors.password = "Password is required"
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters"
     }
-
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password"
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match"
     }
-
-    if (!formData.skills) {
-      newErrors.skills = "Please enter at least one skill"
-    }
-
-    if (!formData.experience) {
-      newErrors.experience = "Please select your experience level"
-    }
+    if (!formData.skills) newErrors.skills = "Please enter at least one skill"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -76,21 +62,34 @@ export default function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!validateForm()) {
-      return
-    }
-
+    if (!validateForm()) return
     setIsLoading(true)
 
-    setTimeout(() => {
-      setIsLoading(false)
-      localStorage.setItem("isLoggedIn", "true")
-      localStorage.setItem("userEmail", formData.email)
-      localStorage.setItem("userName", formData.name)
-      localStorage.setItem("userSkills", formData.skills)
-      alert("Account created successfully!")
-      router.push("/")
-    }, 2000)
+    try {
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          skills: formData.skills,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        alert("✅ Account created successfully!")
+        router.push("/login")
+      } else {
+        alert("❌ " + (data?.error || "Signup failed"))
+      }
+    } catch (error) {
+      alert("❌ Server error. Try again.")
+    }
+
+    setIsLoading(false)
   }
 
   return (
@@ -112,10 +111,9 @@ export default function SignupPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-2">
-                Full Name *
-              </label>
+              <label htmlFor="name" className="block text-sm font-medium mb-2">Full Name *</label>
               <input
                 type="text"
                 id="name"
@@ -124,16 +122,15 @@ export default function SignupPage() {
                 onChange={handleInputChange}
                 className={`w-full bg-gray-900 border-2 ${
                   errors.name ? "border-red-500" : "border-gray-600"
-                } rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors duration-300`}
+                } rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500`}
                 placeholder="Enter your full name"
               />
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
 
+            {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2">
-                Email Address *
-              </label>
+              <label htmlFor="email" className="block text-sm font-medium mb-2">Email Address *</label>
               <input
                 type="email"
                 id="email"
@@ -142,16 +139,15 @@ export default function SignupPage() {
                 onChange={handleInputChange}
                 className={`w-full bg-gray-900 border-2 ${
                   errors.email ? "border-red-500" : "border-gray-600"
-                } rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors duration-300`}
+                } rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500`}
                 placeholder="Enter your email address"
               />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </div>
 
+            {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-2">
-                Password *
-              </label>
+              <label htmlFor="password" className="block text-sm font-medium mb-2">Password *</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -161,13 +157,13 @@ export default function SignupPage() {
                   onChange={handleInputChange}
                   className={`w-full bg-gray-900 border-2 ${
                     errors.password ? "border-red-500" : "border-gray-600"
-                  } rounded-lg px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors duration-300`}
+                  } rounded-lg px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500`}
                   placeholder="Create a strong password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -175,10 +171,9 @@ export default function SignupPage() {
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
             </div>
 
+            {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
-                Confirm Password *
-              </label>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">Confirm Password *</label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
@@ -188,13 +183,13 @@ export default function SignupPage() {
                   onChange={handleInputChange}
                   className={`w-full bg-gray-900 border-2 ${
                     errors.confirmPassword ? "border-red-500" : "border-gray-600"
-                  } rounded-lg px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors duration-300`}
+                  } rounded-lg px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500`}
                   placeholder="Confirm your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -202,10 +197,9 @@ export default function SignupPage() {
               {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
             </div>
 
+            {/* Skills */}
             <div>
-              <label htmlFor="skills" className="block text-sm font-medium mb-2">
-                Your Skills *
-              </label>
+              <label htmlFor="skills" className="block text-sm font-medium mb-2">Your Skills *</label>
               <input
                 type="text"
                 id="skills"
@@ -214,54 +208,17 @@ export default function SignupPage() {
                 onChange={handleInputChange}
                 className={`w-full bg-gray-900 border-2 ${
                   errors.skills ? "border-red-500" : "border-gray-600"
-                } rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors duration-300`}
-                placeholder="e.g., JavaScript, Python, Design, Marketing"
+                } rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500`}
+                placeholder="e.g., JavaScript, Python, Design"
               />
               {errors.skills && <p className="text-red-500 text-sm mt-1">{errors.skills}</p>}
-              <p className="text-gray-400 text-sm mt-1">Separate multiple skills with commas</p>
             </div>
 
-            <div>
-              <label htmlFor="experience" className="block text-sm font-medium mb-2">
-                Experience Level *
-              </label>
-              <select
-                id="experience"
-                name="experience"
-                value={formData.experience}
-                onChange={handleInputChange}
-                className={`w-full bg-gray-900 border-2 ${
-                  errors.experience ? "border-red-500" : "border-gray-600"
-                } rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors duration-300`}
-              >
-                <option value="">Select your experience level</option>
-                <option value="beginner">Beginner (0-1 years)</option>
-                <option value="intermediate">Intermediate (2-4 years)</option>
-                <option value="advanced">Advanced (5-7 years)</option>
-                <option value="expert">Expert (8+ years)</option>
-              </select>
-              {errors.experience && <p className="text-red-500 text-sm mt-1">{errors.experience}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="bio" className="block text-sm font-medium mb-2">
-                Bio (Optional)
-              </label>
-              <textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                rows={3}
-                className="w-full bg-gray-900 border-2 border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors duration-300 resize-none"
-                placeholder="Tell us about yourself and what you're looking to learn or teach..."
-              />
-            </div>
-
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white py-3 rounded-lg font-medium transition-colors duration-300 flex items-center justify-center"
+              className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
@@ -279,21 +236,11 @@ export default function SignupPage() {
               Already have an account?
               <Link
                 href="/login"
-                className="text-cyan-400 hover:text-cyan-300 ml-2 font-medium transition-colors duration-300"
+                className="text-cyan-400 hover:text-cyan-300 ml-2 font-medium"
               >
                 Sign In
               </Link>
             </p>
-          </div>
-
-          <div className="mt-6 p-4 bg-gray-700 rounded-lg">
-            <p className="text-sm text-gray-300 mb-2">Why join us?</p>
-            <ul className="text-xs text-gray-400 space-y-1">
-              <li>• Connect with skilled professionals</li>
-              <li>• Learn new skills for free</li>
-              <li>• Share your expertise with others</li>
-              <li>• Build your professional network</li>
-            </ul>
           </div>
         </div>
       </div>

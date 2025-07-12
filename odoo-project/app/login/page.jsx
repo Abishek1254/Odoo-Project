@@ -18,14 +18,7 @@ export default function LoginPage() {
     skills: "",
   })
 
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-    skills: "",
-  })
-
+  const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -42,13 +35,7 @@ export default function LoginPage() {
   }
 
   const validateForm = () => {
-    const newErrors = {
-      email: "",
-      password: "",
-      confirmPassword: "",
-      name: "",
-      skills: "",
-    }
+    const newErrors = {}
 
     if (!formData.email) {
       newErrors.email = "Email is required"
@@ -89,19 +76,46 @@ export default function LoginPage() {
 
     setIsLoading(true)
 
-    setTimeout(() => {
-      setIsLoading(false)
+    const endpoint = isLogin ? "/api/login" : "/api/signup"
+
+    const payload = isLogin
+      ? {
+          email: formData.email,
+          password: formData.password,
+        }
+      : {
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          skills: formData.skills,
+        }
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong")
+      }
 
       localStorage.setItem("isLoggedIn", "true")
-      localStorage.setItem("userEmail", formData.email)
-
-      if (!isLogin) {
-        localStorage.setItem("userName", formData.name)
-      }
+      localStorage.setItem("userEmail", data.user?.email || formData.email)
+      localStorage.setItem("userName", data.user?.name || formData.name)
 
       alert(isLogin ? "Login successful!" : "Account created successfully!")
       router.push("/")
-    }, 1500)
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const toggleMode = () => {
@@ -113,13 +127,7 @@ export default function LoginPage() {
       name: "",
       skills: "",
     })
-    setErrors({
-      email: "",
-      password: "",
-      confirmPassword: "",
-      name: "",
-      skills: "",
-    })
+    setErrors({})
   }
 
   return (
@@ -251,7 +259,7 @@ export default function LoginPage() {
                     className={`w-full bg-gray-900 border-2 ${
                       errors.skills ? "border-red-500" : "border-gray-600"
                     } rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors duration-300`}
-                    placeholder="e.g., JavaScript, Python, Design"
+                    placeholder="e.g., JavaScript, Python"
                   />
                   {errors.skills && <p className="text-red-500 text-sm mt-1">{errors.skills}</p>}
                   <p className="text-gray-400 text-sm mt-1">Separate multiple skills with commas</p>
@@ -286,14 +294,6 @@ export default function LoginPage() {
               </button>
             </p>
           </div>
-
-          {isLogin && (
-            <div className="mt-6 p-4 bg-gray-700 rounded-lg">
-              <p className="text-sm text-gray-300 mb-2">Demo Credentials:</p>
-              <p className="text-xs text-gray-400">Email: demo@example.com</p>
-              <p className="text-xs text-gray-400">Password: demo123</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

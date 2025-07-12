@@ -3,7 +3,7 @@
 export default function SearchSection({ onSearch, onAvailabilityFilter, searchTerm, availabilityFilter }) {
   const handleSearchSubmit = (e) => {
     e.preventDefault()
-    // Search is handled by the onChange event
+    
   }
 
   return (

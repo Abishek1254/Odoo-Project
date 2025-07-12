@@ -3,36 +3,12 @@
 import { useState } from "react"
 import { Menu, X, User, Bell, Search, Plus, Settings, LogOut, MessageSquare, Star } from "lucide-react"
 
-export default function Header({ isLoggedIn, onLogin }) {
+export default function Header({ isLoggedIn, onLogin, user, notifications = [] }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
 
-  const notifications = [
-    {
-      id: 1,
-      type: 'swap_request',
-      message: 'Sarah Johnson accepted your skill swap request',
-      time: '2 minutes ago',
-      read: false
-    },
-    {
-      id: 2,
-      type: 'new_message',
-      message: 'New message from Joe Williams',
-      time: '1 hour ago',
-      read: false
-    },
-    {
-      id: 3,
-      type: 'rating',
-      message: 'You received a 5-star rating from Michelle Chen',
-      time: '3 hours ago',
-      read: true
-    }
-  ]
-
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter(n => !n.isRead).length
 
   const handleNotificationClick = () => {
     setShowNotifications(!showNotifications)
@@ -111,9 +87,9 @@ export default function Header({ isLoggedIn, onLogin }) {
                         {notifications.length > 0 ? (
                           notifications.map((notification) => (
                             <div 
-                              key={notification.id} 
+                              key={notification._id} 
                               className={`p-4 border-b border-gray-700 hover:bg-gray-700 transition-colors duration-200 ${
-                                !notification.read ? 'bg-blue-500/10' : ''
+                                !notification.isRead ? 'bg-blue-500/10' : ''
                               }`}
                             >
                               <div className="flex items-start space-x-3">
@@ -123,12 +99,12 @@ export default function Header({ isLoggedIn, onLogin }) {
                                       <Star className="w-4 h-4 text-green-400" />
                                     </div>
                                   )}
-                                  {notification.type === 'new_message' && (
+                                  {notification.type === 'swap_accepted' && (
                                     <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
                                       <MessageSquare className="w-4 h-4 text-blue-400" />
                                     </div>
                                   )}
-                                  {notification.type === 'rating' && (
+                                  {notification.type === 'swap_completed' && (
                                     <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
                                       <Star className="w-4 h-4 text-yellow-400" />
                                     </div>
@@ -136,9 +112,11 @@ export default function Header({ isLoggedIn, onLogin }) {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm text-white">{notification.message}</p>
-                                  <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    {new Date(notification.createdAt).toLocaleDateString()}
+                                  </p>
                                 </div>
-                                {!notification.read && (
+                                {!notification.isRead && (
                                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                 )}
                               </div>
@@ -174,11 +152,13 @@ export default function Header({ isLoggedIn, onLogin }) {
                       <div className="p-4 border-b border-gray-700">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">U</span>
+                            <span className="text-white font-bold text-sm">
+                              {user?.name?.charAt(0).toUpperCase() || 'U'}
+                            </span>
                           </div>
                           <div>
-                            <p className="text-white font-medium">User Name</p>
-                            <p className="text-gray-400 text-sm">user@example.com</p>
+                            <p className="text-white font-medium">{user?.name || 'User Name'}</p>
+                            <p className="text-gray-400 text-sm">{user?.email || 'user@example.com'}</p>
                           </div>
                         </div>
                       </div>

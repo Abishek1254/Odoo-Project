@@ -75,7 +75,7 @@ export default function UserCard({ user, onRequest }) {
               <div className="flex items-center space-x-4 text-sm text-gray-400">
                 <div className="flex items-center space-x-1">
                   <MapPin className="w-4 h-4" />
-                  <span>San Francisco, CA</span>
+                  <span>{user.location || 'Location not specified'}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Clock className="w-4 h-4" />
@@ -113,11 +113,11 @@ export default function UserCard({ user, onRequest }) {
           {/* Rating */}
           <div className="flex items-center space-x-2 mb-4">
             <div className="flex items-center space-x-1">
-              {renderStars(parseFloat(user.rating))}
+              {renderStars(user.rating?.average || 0)}
             </div>
-            <span className="text-sm text-gray-400">({user.rating})</span>
+            <span className="text-sm text-gray-400">({(user.rating?.average || 0).toFixed(1)})</span>
             <span className="text-sm text-gray-500">•</span>
-            <span className="text-sm text-gray-400">15 reviews</span>
+            <span className="text-sm text-gray-400">{user.rating?.count || 0} reviews</span>
           </div>
 
           {/* Skills Grid */}
@@ -129,12 +129,13 @@ export default function UserCard({ user, onRequest }) {
                 Skills Offered
               </h4>
               <div className="flex flex-wrap gap-2">
-                {user.skillsOffered.map((skill, index) => (
+                {user.skillsOffered?.map((skill, index) => (
                   <span 
                     key={index} 
                     className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-xs font-medium border border-cyan-500/30"
+                    title={`${skill.name} - ${skill.level}`}
                   >
-                    {skill}
+                    {skill.name}
                   </span>
                 ))}
               </div>
@@ -147,12 +148,13 @@ export default function UserCard({ user, onRequest }) {
                 Skills Wanted
               </h4>
               <div className="flex flex-wrap gap-2">
-                {user.skillsWanted.map((skill, index) => (
+                {user.skillsWanted?.map((skill, index) => (
                   <span 
                     key={index} 
                     className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium border border-blue-500/30"
+                    title={`${skill.name} - ${skill.priority} priority`}
                   >
-                    {skill}
+                    {skill.name}
                   </span>
                 ))}
               </div>
@@ -163,7 +165,7 @@ export default function UserCard({ user, onRequest }) {
         {/* Action Buttons */}
         <div className="flex flex-col space-y-3 lg:flex-shrink-0">
           <button
-            onClick={() => onRequest(user.id)}
+            onClick={() => onRequest(user._id)}
             className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-cyan-500/25"
           >
             <MessageCircle className="w-4 h-4" />
@@ -172,7 +174,7 @@ export default function UserCard({ user, onRequest }) {
           
           <div className="text-center">
             <div className="text-sm text-gray-400">Completed Swaps</div>
-            <div className="text-lg font-semibold text-white">24</div>
+            <div className="text-lg font-semibold text-white">{user.totalSwaps?.completed || 0}</div>
           </div>
         </div>
       </div>

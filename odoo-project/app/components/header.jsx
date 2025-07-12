@@ -5,7 +5,7 @@ export default function Header({ isLoggedIn, onLogin }) {
     <header className="border-b-2 border-white pb-6 mb-8">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="text-center md:text-left">
-          <h1 className="text-2xl font-normal mb-2">Home page</h1>
+
           <h2 className="text-xl font-normal">Skill Swap Platform</h2>
         </div>
         <button

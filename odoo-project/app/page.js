@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Header from "./components/header"
 import SearchSection from "./components/search-section"
 import UserCard from "./components/user-card"
 import Pagination from "./components/pagination"
 import LoginModal from "./components/login-modal"
-
 
 const users = [
   {
@@ -27,7 +27,7 @@ const users = [
   },
   {
     id: 3,
-    name: "Joe wills",
+    name: "Joe Wills",
     skillsOffered: ["Java Script", "Python"],
     skillsWanted: ["ReactJS", "Graphic designer"],
     rating: "4.0/5",
@@ -52,6 +52,8 @@ const users = [
 ]
 
 export default function HomePage() {
+  const router = useRouter()
+
   const [filteredUsers, setFilteredUsers] = useState(users)
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -61,7 +63,6 @@ export default function HomePage() {
 
   const usersPerPage = 3
 
-  
   useEffect(() => {
     const filtered = users.filter((user) => {
       const matchesSearch =
@@ -90,22 +91,20 @@ export default function HomePage() {
   const handleLogin = () => {
     if (isLoggedIn) {
       setIsLoggedIn(false)
-      alert("Logged out successfully!")
+      router.push("/") // You can remove this line if logout doesn't need routing
     } else {
       setShowLoginModal(true)
     }
   }
 
   const handleModalLogin = () => {
-    setIsLoggedIn(true)
     setShowLoginModal(false)
-    alert("Logged in successfully!")
+    router.push("/login") // ✅ Route to /login on login button
   }
 
   const handleModalSignup = () => {
-    setIsLoggedIn(true)
     setShowLoginModal(false)
-    alert("Account created and logged in successfully!")
+    router.push("/signup") // ✅ Route to /signup on signup button
   }
 
   const handleRequest = (userId) => {
@@ -115,10 +114,9 @@ export default function HomePage() {
     }
 
     const user = users.find((u) => u.id === userId)
-    alert(`Request sent to ${user?.name}!`)
+    console.log(`Request sent to ${user?.name}`)
   }
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage)
   const startIndex = (currentPage - 1) * usersPerPage
   const endIndex = startIndex + usersPerPage
